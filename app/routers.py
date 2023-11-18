@@ -1,17 +1,20 @@
 from fastapi import APIRouter, UploadFile, HTTPException, status
 import requests
 
+
 from lib.api import discord
 from lib.api.discord import TriggerType
 from util._queue import taskqueue
-from .handler import prompt_handler, unique_id
+from .handler import prompt_handler, concept_handler,generate_single_prompt, unique_id
 from .schema import (
     TriggerExpandIn,
     TriggerImagineIn,
+    TriggerConcept,
     TriggerUVIn,
     TriggerResetIn,
     QueueReleaseIn,
     TriggerResponse,
+    PromptResponse,
     TriggerZoomOutIn,
     UploadResponse,
     TriggerDescribeIn,
@@ -24,6 +27,48 @@ from .get_messages import Retrieve_Messages
 
 
 router = APIRouter()
+
+@router.post("/understanding_concepts", response_model=TriggerResponse)
+async def concept(body: TriggerConcept):
+    trigger_id, gen_prompt = concept_handler(body.concept_name, body.concept_info)
+    trigger_type = TriggerType.generate.value
+
+    taskqueue.put(trigger_id, discord.generate, gen_prompt)
+    return {"trigger_id": trigger_id, "trigger_type": trigger_type}
+
+
+
+@router.post("/generate_prompts", response_model=PromptResponse)
+async def prompt(body: TriggerConcept):
+    trigger_id, gen_prompt = concept_handler(body.concept_name, body.concept_info)
+    
+    additional_prompts = []
+    for i in range(3):
+        additional_prompt = generate_single_prompt(gen_prompt)
+        
+        additional_prompts.append({
+            "prompt_id": additional_prompt[0],
+            "prompt_text": additional_prompt[1],
+        })
+
+    # Use the generate_prompts function to send all prompts in one call
+    taskqueue.put(trigger_id, discord.generate_prompts, additional_prompts)
+    # Generate the three additional prompts
+    # prompt_1 = generate_single_prompt(gen_prompt)
+    # prompt_2 = generate_single_prompt(gen_prompt)
+    # prompt_3 = generate_single_prompt(gen_prompt)
+    
+
+    #taskqueue.put(trigger_id, discord.generate_prompts, prompt_1)
+
+    # Return the additional prompts and their trigger IDs
+    return {
+        "trigger_id": trigger_id,
+        "trigger_type": TriggerType.generate.value,
+        "additional_prompts": additional_prompts,
+    }
+
+
 
 
 @router.post("/imagine", response_model=TriggerResponse)
