@@ -81,3 +81,8 @@ class SendMessageResponse(BaseModel):
 class MessageBody(BaseModel):
 
     trigger_id: str  
+
+class TableBody(BaseModel):
+
+    data_type: str  
+    msg_id : Optional[int]

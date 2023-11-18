@@ -20,10 +20,13 @@ from .schema import (
     TriggerDescribeIn,
     SendMessageResponse,
     SendMessageIn,
-    MessageBody
+    MessageBody,
+    TableBody
 )
 
 from .get_messages import Retrieve_Messages
+
+from db.database_functions import InsertIntoPrompts,GetRecords
 
 
 router = APIRouter()
@@ -201,13 +204,25 @@ async def zoomout(body: TriggerZoomOutIn):
 
 
 
-@router.post("/getmessage")
-async def getmessage(body: MessageBody):
+@router.post("/get_message")
+async def get_message(body: MessageBody):
     data = await Retrieve_Messages(body.trigger_id)
     if "error" in data :
         raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=data["error"],
     )
+    InsertIntoPrompts(data)
     return data
 
+
+@router.post("/view_messages")
+async def view_messages(body: TableBody):
+    data = GetRecords(body.data_type, body.msg_id)
+    if "error" in data :
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=data["error"],
+    )
+
+    return data
