@@ -6,7 +6,7 @@ cur = con.cursor()
 def InsertIntoPrompts(info) :
 
     insert_query = f"""
-    INSERT OR IGNORE INTO view_prompts (msg_id, msg_hash, msg_content, url, proxy_url)
+    INSERT OR IGNORE INTO messages (msg_id, msg_hash, msg_content, url, proxy_url)
     VALUES ('{info["message_id"]}', '{info["message_hash"]}', '{info["content"]}', '{info["url"]}', '{info["proxy_url"]}')
 """
 
@@ -33,7 +33,7 @@ def GetRecords(table_name,msg_id):
         # Create a list of dictionaries, where column names are used as keys
         result = [dict(zip(column_names, map(str, row))) for row in rows]
 
-        if msg_id is not None and table_name == "view_prompts" :
+        if msg_id is not None and table_name == "messages" :
             for msg in result :
                 print(msg["msg_id"])
                 if int(msg["msg_id"]) == msg_id :

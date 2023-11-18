@@ -171,8 +171,8 @@ async def get_message(body: MessageBody):
     return data
 
 
-@router.post("/view_prompts")
-async def view_prompts(body: TableBody):
+@router.post("/view_messages")
+async def view_messages(body: TableBody):
     data = GetRecords(body.data_type, body.msg_id)
     if "error" in data :
         raise HTTPException(
