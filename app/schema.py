@@ -7,6 +7,10 @@ class TriggerImagineIn(BaseModel):
     prompt: str
     picurl: Optional[str]
 
+class TriggerConcept(BaseModel):
+    concept_name:str
+    concept_info:str
+
 
 class TriggerUVIn(BaseModel):
     index: int
@@ -51,6 +55,12 @@ class TriggerResponse(BaseModel):
     message: str = "success"
     trigger_id: str
     trigger_type: str = ""
+
+class PromptResponse(BaseModel):
+    message: str = "success"
+    trigger_id: str
+    trigger_type: str = ""
+    additional_prompts: list[dict[str, str]] = []
 
 
 class UploadResponse(BaseModel):

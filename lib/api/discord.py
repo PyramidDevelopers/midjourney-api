@@ -125,6 +125,25 @@ async def generate(prompt: str, **kwargs):
     return await trigger(payload)
 
 
+async def generate_prompts(prompt_data: list[str]):
+    payload = _trigger_payload(2, {
+        "version": "1166847114203123795",
+        "id": "938956540159881231",  # Different ID for generate_prompts
+        "name": "imagine_prompts",
+        "type": 1,
+        "options": [{
+            "type": 3,
+            "name": "prompts",
+            "value": ",".join(str(prompt["prompt_text"]) for prompt in prompt_data),
+            
+
+        }],
+        "attachments": []
+    })
+    return await trigger(payload)
+
+
+
 async def upscale(index: int, msg_id: str, msg_hash: str, **kwargs):
     kwargs = {
         "message_flags": 0,
