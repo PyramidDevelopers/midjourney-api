@@ -1,0 +1,23 @@
+Welcome to our Discord server! :wave:
+
+Here's a quick guide for bot commands:
+
+1️⃣/concept :bulb: - Generates a concept prompt.
+:two:/store-prompts <concept_name> :clipboard: - Stores prompts of a concept in Google Cloud Storage.
+:three:/view-concepts :eyes: - Shows all concepts in the channel.
+:four:/view-prompts <concept_name> <number_of_prompts> :mag: - Displays latest prompts of a concept. Defaults to 5 prompts.
+:five:/reset-db :recycle: - Clears client concept and prompt tables in the database.
+:six:/get_raw_image <concept_name> <number_of_images> :camera: - Fetches raw images from a concept.
+:seven:/upload_concept_banner :frame_with_picture: :arrow_up: - Uploads a banner image for a concept. Attach the image to your message.
+Example: /upload_concept_banner YourConceptName
+:eight:/upload_concept_cta :clipboard: :arrow_up: - Uploads a CTA image for a concept. Attach the image to your message.
+Example: /upload_concept_cta YourConceptName
+:nine:/template_ads :file_folder: :pencil: - Templates ads. Requires input folder name, concept name, and optional output folder name.
+Example: /template_ads InputFolderName ConceptName OutputFolderName
+:ten:/athena-help <question> :book: - Provides help. Use without a question for a general help message.
+Replace < > fields with your input. :pencil2:
+
+For more information, use /athena-help <command> <question>.
+
+Enjoy! :smile: :robot:
+What is your role? (client, operator, developer, investor)

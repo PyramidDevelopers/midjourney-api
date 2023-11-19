@@ -1,0 +1,33 @@
+**Athena Discord Bot: Processing Concepts, Assets, and Ads 🤖**
+
+Welcome to the Athena Discord Bot! As an operator, your role involves transforming client-generated concepts into compelling ads. This guide walks you through the process of processing concepts, creating assets, and delivering final ads to clients.
+
+1️⃣ **Reviewing Client Concepts** 🧐
+Clients provide concepts along with relevant context. You need to ensure these meet necessary requirements.
+
+2️⃣ **Generating Multiple Prompts** 🗣️
+Using the client's concept, create additional ad variations. Use tools like the OpenAI API or other creative resources.
+
+3️⃣ **Creating Assets: Banner and CTA** 🎨🔆
+Once you have multiple prompts, create visual assets for each concept using the commands /upload_concept_banner and /upload_concept_cta. Attach the image you wish to upload with each command.
+
+For example:
+
+/upload_concept_banner YourConceptName (attach banner image)
+/upload_concept_cta YourConceptName (attach CTA image)
+Replace YourConceptName with the name of your specific concept.
+
+4️⃣ **Assembling the Ads** 🧩
+Combine the prompts and assets to create final ads. Make sure these effectively communicate the client's desired message.
+
+5️⃣ **Templating Ads and Delivery** 📁✉️
+After assembling the ads, use the /template_ads command to template ads using specific parameters. It requires the name of an input folder and a concept, and optionally the name of an output folder.
+
+Example: /template_ads InputFolderName ConceptName OutputFolderName
+
+The command will create an output folder, template the ads, and share it with specified email addresses.
+
+6️⃣ **Communicating with Clients** 📣
+Keep the client informed throughout the process, providing updates on progress and addressing any questions or concerns. Make sure the final ads meet their expectations and are delivered on time.
+
+Enjoy your creative journey with Athena Discord Bot! 🎉

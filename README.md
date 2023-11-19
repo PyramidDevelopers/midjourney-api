@@ -126,7 +126,8 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "prompt": "a cute cat"
+  "prompt": "a cute cat",
+  "extra": "--ar 9:16"
 }'
 ```
 
@@ -139,9 +140,16 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "prompt": "a cute cat",
+  "extra": "--ar 9:16",
   "picurl": "https://xxxxxx/xxxxxxxxxxxx.jpg"
 }'
 ```
+
+- #### Extra
+- if extra parameters are necessary for the image that you require,
+- Input them in the ` extra ` section 
+- *** eg -> "extra": "--ar 9:16", OR "extra": "--ar 1:1",***
+
 
 ### upscale
 

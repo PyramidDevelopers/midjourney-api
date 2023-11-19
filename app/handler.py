@@ -29,7 +29,7 @@ def unique_id():
     return int(hashlib.sha256(str(time.time()).encode("utf-8")).hexdigest(), 16) % 10**10
 
 
-def prompt_handler(prompt: str, picurl: Union[str, None] = None):
+def prompt_handler(prompt: str, extra: str, picurl: Union[str, None] = None):
     """
     拼接 Prompt 形如: <#1234567890#>a cute cat
     """
@@ -40,7 +40,7 @@ def prompt_handler(prompt: str, picurl: Union[str, None] = None):
     if not picurl and prompt.startswith(("http://", "https://")):
         picurl, _, prompt = prompt.partition(" ")
 
-    return trigger_id, f"{picurl+' ' if picurl else ''}{PROMPT_PREFIX}{trigger_id}{PROMPT_SUFFIX}{prompt}"
+    return trigger_id, f"{picurl+' ' if picurl else ''}{PROMPT_PREFIX}{trigger_id}{PROMPT_SUFFIX}{prompt}{' ' +  extra if extra else ''}"
 
 def concept_handler(concept_name: str, concept_info: str):
     trigger_id = str(unique_id())
@@ -111,6 +111,31 @@ def generate_prompt_error_message(previous_message):
             "content": prompt
         }])
     
+    prompt=response.choices[0].message.content.strip()
+    return trigger_id, prompt
+
+
+def generate_response(full_question, athena_help_message):
+    trigger_id = str(unique_id())
+    prompt = f"""
+    This is the documentation for Athena 
+    {athena_help_message}
+    This is my Question
+    {full_question}
+    Answer the question clearly and descriptively so I can use the bot effectively
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{
+            "role":
+            "system",
+            "content":
+            "You are a discord Athena bot onboarding helper. Use the documentation of /athena_help and Answer any questions posted by the user to help them understand the how to use the bot effectively"
+        }, {
+            "role": "user",
+            "content": prompt
+        }])
     prompt=response.choices[0].message.content.strip()
     return trigger_id, prompt
 

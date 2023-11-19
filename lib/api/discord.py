@@ -146,12 +146,30 @@ async def generate_prompt_error_message(prompt_data: str):
     payload = _trigger_payload(2, {
         "version": "1166847114203123795",
         "id": "938956540159881231",  # Different ID for generate_prompts
-        "name": "imagine_prompts",
+        "name": "generate_prompt_error_message",
         "type": 1,
         "options": [{
             "type": 3,
             "name": "prompts",
             "value": prompt_data,
+            
+
+        }],
+        "attachments": []
+    })
+    return await trigger(payload)
+
+async def generate_response(question: str, response: str):
+    payload = _trigger_payload(2, {
+        "version": "1166847114203123795",
+        "id": "938956540159881231",  # Different ID for generate_prompts
+        "name": "generate_response",
+        "type": 1,
+        "options": [{
+            "type": 3,
+            "name": "prompts",
+            "question": question,
+            "response": response,
             
 
         }],

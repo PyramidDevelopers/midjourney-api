@@ -1,0 +1,83 @@
+Welcome to our Discord server! :wave:
+
+Here's how to use our bot with a couple of command examples:
+
+1. /concept :bulb:
+
+This command is used to create a concept prompt. This will interactively ask you for the name and the context and style of your concept, and it will generate a list of prompts related to it. Here's how you use it:
+
+/concept
+
+2. /store-prompts :clipboard:
+
+This command stores the prompts related to a concept you have previously created into a bucket in Google Cloud Storage. To use it, you need to specify the name of the concept you're interested in:
+
+/store-prompts <concept_name>
+
+3. /view-concepts :eyes:
+
+You can use this command to view all concepts that have been created in the channel you're currently in:
+
+/view-concepts
+
+4. /view-prompts :mag:
+
+This command lets you view the latest prompts related to a concept you specify. You can also specify the number of prompts you want to view (default is 5). Here's how you use it:
+
+/view-prompts <concept_name> <number_of_prompts>
+
+5. /reset-db :recycle:
+
+This command is used to clear the client concept and concept prompt tables in the database:
+
+/reset-db
+
+6. /get_raw_image :camera:
+
+This command fetches raw images from a certain concept. You need to specify the concept and the number of images you wish to fetch:
+
+/get_raw_image <concept_name> <number_of_images>
+
+7. /upload_concept_banner :frame_with_picture: :arrow_up:
+
+Uploads a banner image for a specific concept. Make sure to attach the image to your message.
+
+:pencil2: Example: /upload_concept_banner YourConceptName
+
+:page_facing_up: Please attach the banner image you want to upload to the command message.
+
+:bulb: Replace "YourConceptName" with your specific concept name.
+
+8. /upload_concept_cta :clipboard: :arrow_up:
+
+Uploads a Call To Action (CTA) image for a specific concept. Make sure to attach the image to your message.
+
+:pencil2: Example: /upload_concept_cta YourConceptName
+
+:page_facing_up: Please attach the CTA image you want to upload to the command message.
+
+:bulb: Replace "YourConceptName" with your specific concept name.
+
+9. /template_ads :file_folder: :pencil:
+
+Templates ads using specific parameters. This command requires the name of an input folder and a concept, and optionally the name of an output folder.
+
+:pencil2: Example: /template_ads InputFolderName ConceptName OutputFolderName
+
+:bulb: Replace "InputFolderName" with your input folder, "ConceptName" with your concept, and "OutputFolderName" with your output folder. If "OutputFolderName" is not provided, the default will be templated_ads_{InputFolderName}.
+
+:mag: In Discord, you can always type /help to see a list of all available commands and how to use them. Don't forget to enjoy the process! :smile:
+
+10. /athena-help :book:
+
+If you're ever unsure about how to use a command, you can use the /athena-help command to get help. Here's how you use it:
+
+/athena-help <question>
+
+Replace <question> with your specific question about a command. If you don't provide a question, it will provide a general help message.
+
+Remember to replace the fields surrounded by < > with your input.
+
+Happy chatting! :speech_balloon: :robot:
+
+📌 For more information and advanced help, use `/athena-help <command> <question>`.
