@@ -2,6 +2,12 @@ from fastapi import APIRouter, UploadFile, HTTPException, status
 import requests
 import sqlite3
 from fastapi import HTTPException
+import openai
+import os
+
+
+openai.api_key = os.environ['OPENAI_API_KEY']
+
 
 
 from lib.api import discord
@@ -109,6 +115,74 @@ async def prompt(body: TriggerConcept):
         "trigger_type": TriggerType.generate.value,
         "additional_prompts": additional_prompts,
     }
+
+
+def alter_prompt(concept_name, instructions):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # Retrieve prompts for the given concept_name
+    cursor.execute('''
+        SELECT * FROM concept_prompts
+        WHERE concept_name = ?
+    ''', (concept_name,))
+
+    prompts = cursor.fetchall()
+
+    # Check if prompts were found
+    if not prompts:
+        conn.close()
+        raise HTTPException(status_code=404, detail=f"No prompts found for the given concept_name: {concept_name}")
+
+    altered_prompts = []
+    for prompt in prompts:
+        mj_prompt = prompt[4]  # Assuming the prompt_text is at the fifth position in the table
+        altered_prompt = f"""
+        Use the instructions provided below in delimiter [], to edit the image prompt in delimiter <>
+
+        instructions:
+        [{instructions}]
+
+        image prompt:
+        <{mj_prompt}>
+        """
+
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{
+                "role":
+                "system",
+                "content":
+                "You are an AI assistant capable of editing / modifying an image description according to given instructions"
+            }, {
+                "role": "user",
+                "content": altered_prompt
+            }])
+        altered_content = response.choices[0].message.content.strip()
+        altered_prompts.append({"prompt_id": prompt[2], "prompt_text": altered_content})
+
+        # Update the prompt in the database
+        cursor.execute('''
+            UPDATE concept_prompts
+            SET prompt_text = ?
+            WHERE id = ?
+        ''', (altered_content, prompt[0]))
+
+    conn.commit()
+    conn.close()
+
+    return altered_prompts
+
+@router.post("/alter_prompts",response_model=list[dict])
+async def concept(concept_name: str, instructions: str):
+    altered_prompts = alter_prompt(concept_name=concept_name,instructions=instructions)
+
+    # Use the first altered prompt to generate an image
+    trigger_id = str(unique_id())
+    taskqueue.put(trigger_id, discord.generate_prompts, altered_prompts[0])
+
+    return altered_prompts
+
 
 
 
