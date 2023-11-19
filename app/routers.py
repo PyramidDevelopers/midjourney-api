@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, HTTPException, status
+from fastapi import APIRouter, UploadFile, HTTPException, status, Request, Form
 import requests
 import sqlite3
 from fastapi import HTTPException
@@ -25,12 +25,13 @@ from .schema import (
     SendMessageResponse,
     SendMessageIn,
     MessageBody,
-    TableBody
+    TableBody,
+    UploadBody
 )
 
 from .get_messages import Retrieve_Messages
 
-from db.database_functions import InsertIntoPrompts,GetRecords
+from db.database_functions import InsertIntoPrompts,GetRecords, UploadBanner
 
 
 router = APIRouter()
@@ -307,3 +308,22 @@ async def view_messages(body: TableBody):
     )
 
     return data
+
+
+
+
+@router.post("/upload_concept_template")
+async def upload_concept_template(template: UploadFile,
+    username: str = Form(...),
+    user_id: str = Form(...)):
+
+    data =  UploadBanner(template,username,user_id)
+
+    
+    if "error" in data :
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=data["error"],
+    )
+
+    return {"filename": template.filename, "status" : "success"}

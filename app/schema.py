@@ -1,5 +1,5 @@
 from typing import Optional
-
+from fastapi import UploadFile
 from pydantic import BaseModel
 
 
@@ -93,3 +93,9 @@ class TableBody(BaseModel):
 
     data_type: str  
     msg_id : Optional[int]
+
+class UploadBody(BaseModel):
+
+    username : str
+    user_id : str
+    template : UploadFile
