@@ -70,6 +70,15 @@ class PromptErrorMsgInResponse(BaseModel):
     trigger_type: str = ""
     prompt: str
 
+class GenerateResponseIn(BaseModel):
+    role: str
+    question: str
+class GenerateResponseOut(BaseModel):
+    message: str = "success"
+    trigger_id: str
+    trigger_type: str = ""
+    reply: str
+
 class UploadResponse(BaseModel):
     message: str = "success"
     upload_filename: str = ""

@@ -14,6 +14,7 @@ from lib.api import discord
 from lib.api.discord import TriggerType
 from util._queue import taskqueue
 from .handler import prompt_handler, concept_handler, generate_single_prompt, unique_id, generate_prompt_error_message
+from .get_role_response import get_help_text
 from .schema import (
     TriggerExpandIn,
     TriggerImagineIn,
@@ -25,6 +26,8 @@ from .schema import (
     PromptResponse,
     PromptErrorMsgIn,
     PromptErrorMsgInResponse,
+    GenerateResponseIn,
+    GenerateResponseOut,
     TriggerZoomOutIn,
     UploadResponse,
     TriggerDescribeIn,
@@ -123,7 +126,7 @@ async def prompt(body: TriggerConcept):
 @router.post("/generate_prompt_error_message", response_model=PromptErrorMsgInResponse)
 async def prompt_error_msg(body: PromptErrorMsgIn):
     trigger_id, prompt_res = generate_prompt_error_message(body.prev_msg)
-    taskqueue.put(trigger_id, discord.generate_prompt_error_message, [prompt_res])
+    taskqueue.put(trigger_id, discord.generate_prompt_error_message, prompt_res)
     return {
         "trigger_id": trigger_id,
         "trigger_type": TriggerType.generate.value,
@@ -133,6 +136,16 @@ async def prompt_error_msg(body: PromptErrorMsgIn):
 #   "prev_msg": "Capture a thrilling shot of an Assassin's Creed character in a high-stakes cooking competition, utilizing dynamic lighting, intense camera angles, and vivid colors to convey competitiveness and innovation."
 # }
 
+@router.post("/generate_response", response_model=GenerateResponseOut)
+async def generate_response(body: GenerateResponseIn):
+    response_result = await get_help_text(body.role, body.question)
+    trigger_id, reply = response_result
+    taskqueue.put(trigger_id, discord.generate_response, body.question, reply)
+    return{
+        "trigger_id": trigger_id,
+        "trigger_type": TriggerType.generate.value,
+        "reply": reply
+    }
 
 def alter_prompt(concept_name, instructions):
     conn = sqlite3.connect(DB_FILE)

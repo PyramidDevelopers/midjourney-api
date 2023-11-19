@@ -115,6 +115,31 @@ def generate_prompt_error_message(previous_message):
     return trigger_id, prompt
 
 
+def generate_response(full_question, athena_help_message):
+    trigger_id = str(unique_id())
+    prompt = f"""
+    This is the documentation for Athena 
+    {athena_help_message}
+    This is my Question
+    {full_question}
+    Answer the question clearly and descriptively so I can use the bot effectively
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{
+            "role":
+            "system",
+            "content":
+            "You are a discord Athena bot onboarding helper. Use the documentation of /athena_help and Answer any questions posted by the user to help them understand the how to use the bot effectively"
+        }, {
+            "role": "user",
+            "content": prompt
+        }])
+    prompt=response.choices[0].message.content.strip()
+    return trigger_id, prompt
+
+
 
 def http_response(func):
     @wraps(func)

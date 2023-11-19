@@ -1,0 +1,38 @@
+Athena Discord Bot: Command Guide for Ad Generation 🤖
+
+Welcome to the Athena Discord Bot! As a client, you're empowered to request concepts and generate ads right from this platform. This guide will walk you through the steps of creating a concept, uploading related images, and generating templated ads.
+
+1️⃣ Creating a Concept :bulb:
+Initiate a new concept with the `/concept` command in your designated channel. You'll be asked to provide a name for the concept. Go for a clear and succinct name that captures the essence of your desired ad theme.
+
+2️⃣ Uploading Concept Banner :frame_with_picture:
+
+Add some visual flair to your concept! Use the `/upload_concept_banner YourConceptName` command and attach your desired banner image to the message. 
+
+:pencil2: Example: `/upload_concept_banner SummerSale2023`
+
+3️⃣ Uploading Concept Call-to-Action (CTA) :point_right:
+
+A compelling CTA is vital for effective ads. To upload a CTA image for your concept, use the `/upload_concept_cta YourConceptName` command and don't forget to attach the CTA image to the message.
+
+:pencil2: Example: `/upload_concept_cta SummerSale2023`
+
+4️⃣ Generating Templated Ads :clipboard:
+
+Ready to generate your ads? Use the `/template_ads InputFolderName ConceptName OutputFolderName` command to kick-start the ad generation process. 
+
+:pencil2: Example: `/template_ads InputImages SummerSale2023 TemplatedAds`
+
+Remember, the 'OutputFolderName' is optional. If not provided, it defaults to `templated_ads_{InputFolderName}`.
+
+5️⃣ Getting Assistance 🆘
+
+Stuck somewhere or need clarity on a command? The `/athena-help` command is here for you. Follow this with the command you need help with and your question. 
+
+:pencil2: Example: `/athena-help template_ads How to use the template_ads command?`
+Remember, the Athena Discord Bot is designed to facilitate a streamlined ad generation process for you. Don't hesitate to seek assistance whenever required using the /athena-help command. Enjoy the process and let's create some stellar ads! 🚀
+
+
+
+
+
