@@ -1,4 +1,5 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, HTTPException, status
+import requests
 
 from lib.api import discord
 from lib.api.discord import TriggerType
@@ -16,7 +17,14 @@ from .schema import (
     TriggerDescribeIn,
     SendMessageResponse,
     SendMessageIn,
+    MessageBody,
+    TableBody
 )
+
+from .get_messages import Retrieve_Messages
+
+from db.database_functions import InsertIntoPrompts,GetRecords
+
 
 router = APIRouter()
 
@@ -27,7 +35,8 @@ async def imagine(body: TriggerImagineIn):
     trigger_type = TriggerType.generate.value
 
     taskqueue.put(trigger_id, discord.generate, prompt)
-    return {"trigger_id": trigger_id, "trigger_type": trigger_type}
+
+    return {"trigger_id": trigger_id, "trigger_type": trigger_type, "prompt" : body.prompt}
 
 
 @router.post("/upscale", response_model=TriggerResponse)
@@ -148,3 +157,27 @@ async def zoomout(body: TriggerZoomOutIn):
     # 返回结果
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
+
+
+@router.post("/get_message")
+async def get_message(body: MessageBody):
+    data = await Retrieve_Messages(body.trigger_id)
+    if "error" in data :
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=data["error"],
+    )
+    InsertIntoPrompts(data)
+    return data
+
+
+@router.post("/view_messages")
+async def view_messages(body: TableBody):
+    data = GetRecords(body.data_type, body.msg_id)
+    if "error" in data :
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=data["error"],
+    )
+
+    return data
