@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, HTTPException, status
+from fastapi import APIRouter, UploadFile, HTTPException, status, Request, Form
 import requests
 import sqlite3
 from fastapi import HTTPException
@@ -13,7 +13,7 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 from lib.api import discord
 from lib.api.discord import TriggerType
 from util._queue import taskqueue
-from .handler import prompt_handler, concept_handler,generate_single_prompt, unique_id
+from .handler import prompt_handler, concept_handler, generate_single_prompt, unique_id, generate_prompt_error_message
 from .schema import (
     TriggerExpandIn,
     TriggerImagineIn,
@@ -23,18 +23,21 @@ from .schema import (
     QueueReleaseIn,
     TriggerResponse,
     PromptResponse,
+    PromptErrorMsgIn,
+    PromptErrorMsgInResponse,
     TriggerZoomOutIn,
     UploadResponse,
     TriggerDescribeIn,
     SendMessageResponse,
     SendMessageIn,
     MessageBody,
-    TableBody
+    TableBody,
+    UploadBody
 )
 
 from .get_messages import Retrieve_Messages
 
-from db.database_functions import InsertIntoPrompts,GetRecords
+from db.database_functions import InsertIntoPrompts,GetRecords, UploadBanner
 
 
 router = APIRouter()
@@ -115,6 +118,20 @@ async def prompt(body: TriggerConcept):
         "trigger_type": TriggerType.generate.value,
         "additional_prompts": additional_prompts,
     }
+
+
+@router.post("/generate_prompt_error_message", response_model=PromptErrorMsgInResponse)
+async def prompt_error_msg(body: PromptErrorMsgIn):
+    trigger_id, prompt_res = generate_prompt_error_message(body.prev_msg)
+    taskqueue.put(trigger_id, discord.generate_prompt_error_message, [prompt_res])
+    return {
+        "trigger_id": trigger_id,
+        "trigger_type": TriggerType.generate.value,
+        "prompt": prompt_res
+    }
+# {
+#   "prev_msg": "Capture a thrilling shot of an Assassin's Creed character in a high-stakes cooking competition, utilizing dynamic lighting, intense camera angles, and vivid colors to convey competitiveness and innovation."
+# }
 
 
 def alter_prompt(concept_name, instructions):
@@ -365,3 +382,22 @@ async def view_messages(body: TableBody):
     )
 
     return data
+
+
+
+
+@router.post("/upload_concept_template")
+async def upload_concept_template(template: UploadFile,
+    username: str = Form(...),
+    user_id: str = Form(...)):
+
+    data =  UploadBanner(template,username,user_id)
+
+    
+    if "error" in data :
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=data["error"],
+    )
+
+    return {"filename": template.filename, "status" : "success"}
