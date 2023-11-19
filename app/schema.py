@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class TriggerImagineIn(BaseModel):
     prompt: str
+    extra: str
     picurl: Optional[str]
 
 class TriggerConcept(BaseModel):

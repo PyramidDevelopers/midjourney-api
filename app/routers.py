@@ -219,7 +219,7 @@ async def concept(concept_name: str, instructions: str):
 
 @router.post("/imagine", response_model=TriggerResponse)
 async def imagine(body: TriggerImagineIn):
-    trigger_id, prompt = prompt_handler(body.prompt, body.picurl)
+    trigger_id, prompt = prompt_handler(body.prompt, body.extra, body.picurl)
     trigger_type = TriggerType.generate.value
 
     taskqueue.put(trigger_id, discord.generate, prompt)

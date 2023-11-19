@@ -29,7 +29,7 @@ def unique_id():
     return int(hashlib.sha256(str(time.time()).encode("utf-8")).hexdigest(), 16) % 10**10
 
 
-def prompt_handler(prompt: str, picurl: Union[str, None] = None):
+def prompt_handler(prompt: str, extra: str, picurl: Union[str, None] = None):
     """
     拼接 Prompt 形如: <#1234567890#>a cute cat
     """
@@ -40,7 +40,7 @@ def prompt_handler(prompt: str, picurl: Union[str, None] = None):
     if not picurl and prompt.startswith(("http://", "https://")):
         picurl, _, prompt = prompt.partition(" ")
 
-    return trigger_id, f"{picurl+' ' if picurl else ''}{PROMPT_PREFIX}{trigger_id}{PROMPT_SUFFIX}{prompt}"
+    return trigger_id, f"{picurl+' ' if picurl else ''}{PROMPT_PREFIX}{trigger_id}{PROMPT_SUFFIX}{prompt}{' ' +  extra if extra else ''}"
 
 def concept_handler(concept_name: str, concept_info: str):
     trigger_id = str(unique_id())
