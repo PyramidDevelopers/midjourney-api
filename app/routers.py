@@ -1,5 +1,7 @@
 from fastapi import APIRouter, UploadFile, HTTPException, status
 import requests
+import sqlite3
+from fastapi import HTTPException
 
 
 from lib.api import discord
@@ -20,13 +22,50 @@ from .schema import (
     TriggerDescribeIn,
     SendMessageResponse,
     SendMessageIn,
-    MessageBody
+    MessageBody,
+    TableBody
 )
 
 from .get_messages import Retrieve_Messages
 
+from db.database_functions import InsertIntoPrompts,GetRecords
+
 
 router = APIRouter()
+
+# Assuming you have a SQLite database file named "prompts.db"
+DB_FILE = "athena.db"
+
+# Function to create the prompts table
+def create_prompts_table():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS concept_prompts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            concept_name TEXT,
+            trigger_id TEXT,
+            prompt_id TEXT,
+            prompt_text TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+# Function to insert prompts into the database
+def insert_prompts(concept_name,trigger_id, prompts):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    for prompt in prompts:
+        cursor.execute('''
+            INSERT INTO concept_prompts (concept_name, trigger_id, prompt_id, prompt_text)
+            VALUES (?,?, ?, ?)
+        ''', (concept_name, trigger_id, prompt['prompt_id'], prompt['prompt_text']))
+
+    conn.commit()
+
+    conn.close()
+
 
 @router.post("/understanding_concepts", response_model=TriggerResponse)
 async def concept(body: TriggerConcept):
@@ -52,15 +91,18 @@ async def prompt(body: TriggerConcept):
         })
 
     # Use the generate_prompts function to send all prompts in one call
-    taskqueue.put(trigger_id, discord.generate_prompts, additional_prompts)
+    #taskqueue.put(trigger_id, discord.generate_prompts, additional_prompts)
     # Generate the three additional prompts
     # prompt_1 = generate_single_prompt(gen_prompt)
     # prompt_2 = generate_single_prompt(gen_prompt)
     # prompt_3 = generate_single_prompt(gen_prompt)
+
+    for prompt in additional_prompts:
+            taskqueue.put(trigger_id, discord.generate_prompts, [prompt])
     
-
-    #taskqueue.put(trigger_id, discord.generate_prompts, prompt_1)
-
+    create_prompts_table()
+    insert_prompts(body.concept_name,trigger_id, additional_prompts)
+    
     # Return the additional prompts and their trigger IDs
     return {
         "trigger_id": trigger_id,
@@ -199,15 +241,53 @@ async def zoomout(body: TriggerZoomOutIn):
     # 返回结果
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
+@router.post("/view_concepts",response_model=list[dict])
+async def view_concepts(concept_name: str):
+    
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # Retrieve prompts for the given concept_name
+    cursor.execute('''
+        SELECT * FROM concept_prompts
+        WHERE concept_name = ?
+    ''', (concept_name,))
+
+    prompts = cursor.fetchall()
+
+    conn.close()
+
+    # Check if prompts were found
+    if not prompts:
+        raise HTTPException(status_code=404, detail="No prompts found for the given concept_name")
+
+    prompts_list = [{"prompt_id": prompt[2], "prompt_text": prompt[4]} for prompt in prompts]
+
+    return prompts_list
 
 
-@router.post("/getmessage")
-async def getmessage(body: MessageBody):
+
+
+
+@router.post("/get_message")
+async def get_message(body: MessageBody):
     data = await Retrieve_Messages(body.trigger_id)
     if "error" in data :
         raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=data["error"],
     )
+    InsertIntoPrompts(data)
     return data
 
+
+@router.post("/view_messages")
+async def view_messages(body: TableBody):
+    data = GetRecords(body.data_type, body.msg_id)
+    if "error" in data :
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=data["error"],
+    )
+
+    return data
