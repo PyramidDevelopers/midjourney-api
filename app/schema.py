@@ -62,6 +62,13 @@ class PromptResponse(BaseModel):
     trigger_type: str = ""
     additional_prompts: list[dict[str, str]] = []
 
+class PromptErrorMsgIn(BaseModel):
+    prev_msg: str
+class PromptErrorMsgInResponse(BaseModel):
+    message: str = "success"
+    trigger_id: str
+    trigger_type: str = ""
+    prompt: str
 
 class UploadResponse(BaseModel):
     message: str = "success"
