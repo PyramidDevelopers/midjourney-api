@@ -1,17 +1,22 @@
 from fastapi import APIRouter, UploadFile, HTTPException, status
 import requests
+import sqlite3
+from fastapi import HTTPException
+
 
 from lib.api import discord
 from lib.api.discord import TriggerType
 from util._queue import taskqueue
-from .handler import prompt_handler, unique_id
+from .handler import prompt_handler, concept_handler,generate_single_prompt, unique_id
 from .schema import (
     TriggerExpandIn,
     TriggerImagineIn,
+    TriggerConcept,
     TriggerUVIn,
     TriggerResetIn,
     QueueReleaseIn,
     TriggerResponse,
+    PromptResponse,
     TriggerZoomOutIn,
     UploadResponse,
     TriggerDescribeIn,
@@ -27,6 +32,85 @@ from db.database_functions import InsertIntoPrompts,GetRecords
 
 
 router = APIRouter()
+
+# Assuming you have a SQLite database file named "prompts.db"
+DB_FILE = "athena.db"
+
+# Function to create the prompts table
+def create_prompts_table():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS concept_prompts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            concept_name TEXT,
+            trigger_id TEXT,
+            prompt_id TEXT,
+            prompt_text TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+# Function to insert prompts into the database
+def insert_prompts(concept_name,trigger_id, prompts):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    for prompt in prompts:
+        cursor.execute('''
+            INSERT INTO concept_prompts (concept_name, trigger_id, prompt_id, prompt_text)
+            VALUES (?,?, ?, ?)
+        ''', (concept_name, trigger_id, prompt['prompt_id'], prompt['prompt_text']))
+
+    conn.commit()
+
+    conn.close()
+
+
+@router.post("/understanding_concepts", response_model=TriggerResponse)
+async def concept(body: TriggerConcept):
+    trigger_id, gen_prompt = concept_handler(body.concept_name, body.concept_info)
+    trigger_type = TriggerType.generate.value
+
+    taskqueue.put(trigger_id, discord.generate, gen_prompt)
+    return {"trigger_id": trigger_id, "trigger_type": trigger_type}
+
+
+
+@router.post("/generate_prompts", response_model=PromptResponse)
+async def prompt(body: TriggerConcept):
+    trigger_id, gen_prompt = concept_handler(body.concept_name, body.concept_info)
+    
+    additional_prompts = []
+    for i in range(3):
+        additional_prompt = generate_single_prompt(gen_prompt)
+        
+        additional_prompts.append({
+            "prompt_id": additional_prompt[0],
+            "prompt_text": additional_prompt[1],
+        })
+
+    # Use the generate_prompts function to send all prompts in one call
+    #taskqueue.put(trigger_id, discord.generate_prompts, additional_prompts)
+    # Generate the three additional prompts
+    # prompt_1 = generate_single_prompt(gen_prompt)
+    # prompt_2 = generate_single_prompt(gen_prompt)
+    # prompt_3 = generate_single_prompt(gen_prompt)
+
+    for prompt in additional_prompts:
+            taskqueue.put(trigger_id, discord.generate_prompts, [prompt])
+    
+    create_prompts_table()
+    insert_prompts(body.concept_name,trigger_id, additional_prompts)
+    
+    # Return the additional prompts and their trigger IDs
+    return {
+        "trigger_id": trigger_id,
+        "trigger_type": TriggerType.generate.value,
+        "additional_prompts": additional_prompts,
+    }
+
+
 
 
 @router.post("/imagine", response_model=TriggerResponse)
@@ -156,6 +240,32 @@ async def zoomout(body: TriggerZoomOutIn):
 
     # 返回结果
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
+
+@router.post("/view_concepts",response_model=list[dict])
+async def view_concepts(concept_name: str):
+    
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # Retrieve prompts for the given concept_name
+    cursor.execute('''
+        SELECT * FROM concept_prompts
+        WHERE concept_name = ?
+    ''', (concept_name,))
+
+    prompts = cursor.fetchall()
+
+    conn.close()
+
+    # Check if prompts were found
+    if not prompts:
+        raise HTTPException(status_code=404, detail="No prompts found for the given concept_name")
+
+    prompts_list = [{"prompt_id": prompt[2], "prompt_text": prompt[4]} for prompt in prompts]
+
+    return prompts_list
+
+
 
 
 

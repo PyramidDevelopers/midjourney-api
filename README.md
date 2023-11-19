@@ -157,7 +157,15 @@ curl -X 'POST' \
   "trigger_id": "xxxxxxxxxx"
 }'
 ```
+- #### Precautions
+- ***make sure that msg_id, msg_hash & trigger_id is of the right message (msg will be a 4 img panel which have U1, U2, U3, U4)***
+- ***to get the msg_id & msg_hash, get the trigger_id of respective message from the bot message***
 
+- eg -> if bot return `string <#1234567890#>world of warcraft in pink` => the trigger_id is 1234567890
+
+- ***once you have trigger_id, use the getmessage endpoint and input the trigger_id to get respective msg info***
+
+- #### Parameters
 - `index`: Image index, possible values: 1, 2, 3, 4
 - `msg_id`: Callback message `id` field after the completion of the drawing in the `imagine` process
 - `msg_hash`: Extracted from the callback message after the completion of the drawing in the `imagine` process. It is obtained by splitting the filename in `attachments[0]` and taking the last part before the extension.
@@ -267,7 +275,19 @@ curl -X 'POST' \
 }'
 ```
 
+- #### Precautions
+- ***make sure that msg_id, msd_hash & trigger_id is of the right message(single img panel that have the 🔍 Zoom Out 2x & 1.5 option)***
+- ***to get the msg_id & msg_hash, get the trigger_id of respective message from the bot message***
+
+- eg -> if bot return `string <#1234567890#>world of warcraft in pink` => the trigger_id is 1234567890
+
+- ***once you have trigger_id, use the getmessage endpoint and input the trigger_id to get respective msg info***
+
+- #### Parameters
+- `msg_id`: from the above mentioned
+- `msg_hash`: from the above mentioned
 - `zoomout`: Image enlargement (Outpaint) factor, 2x -> 50, 1.5x -> 75
+- `trigger_id`: from the above mentioned
 
 
 ### expand
