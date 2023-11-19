@@ -1,9 +1,28 @@
 import sqlite3
+from fastapi import UploadFile
+
+
 
 con = sqlite3.connect("athena.db")
 cur = con.cursor()
 
 def InsertIntoPrompts(info) :
+
+    create_table_query = '''
+    CREATE TABLE IF NOT EXISTS messages (
+        msg_id VARCHAR(50) PRIMARY KEY,
+        msg_hash VARCHAR(255) NOT NULL,
+        msg_content TEXT,
+        url VARCHAR(255),
+        proxy_url VARCHAR(255)
+    )
+'''
+
+# Execute the SQL statement to create the table
+    cur.execute(create_table_query)
+
+# Commit the changes and close the connection
+    con.commit()
 
     insert_query = f"""
     INSERT OR IGNORE INTO messages (msg_id, msg_hash, msg_content, url, proxy_url)
@@ -49,3 +68,32 @@ def GetRecords(table_name,msg_id):
         print(f"Error: {e}")
         return {"error" : "Table does not exist"}
 
+
+def UploadBanner(file : UploadFile,username,user_id):
+
+    try :
+        cur.execute('''
+        CREATE TABLE IF NOT EXISTS concept_templates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username VARCHAR(255) NOT NULL,
+            user_id VARCHAR(255) NOT NULL,
+            template_name VARCHAR(255) NOT NULL,
+            template_data BLOB NOT NULL
+            )
+        ''')
+
+        cur.execute('''
+                INSERT INTO concept_templates (username, user_id, template_name, template_data)
+                VALUES (?, ?, ?, ?)
+                ''', 
+                (username, user_id, file.filename, file.file.read())
+                )
+    
+        con.commit()
+        return {"status" : "Success"}
+    
+    except sqlite3.OperationalError as e:
+        # Handle the case where the table does not exist
+        print(f"Error: {e}")
+
+        return {"error" : e}
