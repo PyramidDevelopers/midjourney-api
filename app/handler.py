@@ -90,6 +90,29 @@ def generate_single_prompt(generated_prompt):
     prompt=response.choices[0].message.content.strip()
     return trigger_id,prompt
 
+def generate_prompt_error_message(previous_message):
+    trigger_id = str(unique_id())
+    prompt = f"""
+    Using the input command in `` delimiter. Process and reflect back to the user on what was understood as concept, context, and style in the previous message and how they can give better concept input.
+    `
+    {previous_message}
+    `
+
+    Give the feedback as if you are talking to a colleague.  Keep each section short, crisp, and concise and yet give all of the information you can.
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{
+            "role": "system",
+            "content": "You are a concept requirement taking bot and feedback giving bot"
+        }, {
+            "role": "user",
+            "content": prompt
+        }])
+    
+    prompt=response.choices[0].message.content.strip()
+    return trigger_id, prompt
 
 
 
