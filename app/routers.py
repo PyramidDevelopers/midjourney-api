@@ -1,6 +1,5 @@
 from fastapi import APIRouter, UploadFile, HTTPException, status, Request, Form
 import requests
-import sqlite3
 from fastapi import HTTPException
 import openai
 import os
@@ -41,43 +40,48 @@ from .schema import (
 from .get_messages import Retrieve_Messages
 
 from db.database_functions import InsertIntoPrompts,GetRecords, UploadBanner
-
+from db.database import DatabaseConnection
 
 router = APIRouter()
 
-# Assuming you have a SQLite database file named "prompts.db"
-DB_FILE = "athena.db"
 
-# Function to create the prompts table
+# Assuming you have a PostgreSQL database connection details
+DB_SECRET_NAME = "prod/AthenaAI/postgres"
+
+# Function to create the prompts table in PostgreSQL
 def create_prompts_table():
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS concept_prompts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            concept_name TEXT,
-            trigger_id TEXT,
-            prompt_id TEXT,
-            prompt_text TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-# Function to insert prompts into the database
-def insert_prompts(concept_name,trigger_id, prompts):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-
-    for prompt in prompts:
+    db_connection = DatabaseConnection(DB_SECRET_NAME)
+    connection = db_connection.connection
+    if connection:
+        cursor = connection.cursor()
         cursor.execute('''
-            INSERT INTO concept_prompts (concept_name, trigger_id, prompt_id, prompt_text)
-            VALUES (?,?, ?, ?)
-        ''', (concept_name, trigger_id, prompt['prompt_id'], prompt['prompt_text']))
+            CREATE TABLE IF NOT EXISTS concept_prompts (
+                id SERIAL PRIMARY KEY,
+                concept_name TEXT,
+                trigger_id TEXT,
+                prompt_id TEXT,
+                prompt_text TEXT
+            )
+        ''')
+        connection.commit()
+        cursor.close()
+        db_connection.close_connection()
 
-    conn.commit()
+# Function to insert prompts into the PostgreSQL database
+def insert_prompts(concept_name, trigger_id, prompts):
+    db_connection = DatabaseConnection(DB_SECRET_NAME)
+    connection = db_connection.connection
+    if connection:
+        cursor = connection.cursor()
+        for prompt in prompts:
+            cursor.execute('''
+                INSERT INTO concept_prompts (concept_name, trigger_id, prompt_id, prompt_text)
+                VALUES (%s, %s, %s, %s)
+            ''', (concept_name, trigger_id, prompt['prompt_id'], prompt['prompt_text']))
 
-    conn.close()
-
+        connection.commit()
+        cursor.close()
+        db_connection.close_connection()
 
 @router.post("/understanding_concepts", response_model=TriggerResponse)
 async def concept(body: TriggerConcept):
@@ -147,61 +151,58 @@ async def generate_response(body: GenerateResponseIn):
         "reply": reply
     }
 
+# Function to alter prompts in the PostgreSQL database
 def alter_prompt(concept_name, instructions):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-
-    # Retrieve prompts for the given concept_name
-    cursor.execute('''
-        SELECT * FROM concept_prompts
-        WHERE concept_name = ?
-    ''', (concept_name,))
-
-    prompts = cursor.fetchall()
-
-    # Check if prompts were found
-    if not prompts:
-        conn.close()
-        raise HTTPException(status_code=404, detail=f"No prompts found for the given concept_name: {concept_name}")
-
-    altered_prompts = []
-    for prompt in prompts:
-        mj_prompt = prompt[4]  # Assuming the prompt_text is at the fifth position in the table
-        altered_prompt = f"""
-        Use the instructions provided below in delimiter [], to edit the image prompt in delimiter <>
-
-        instructions:
-        [{instructions}]
-
-        image prompt:
-        <{mj_prompt}>
-        """
-
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{
-                "role":
-                "system",
-                "content":
-                "You are an AI assistant capable of editing / modifying an image description according to given instructions"
-            }, {
-                "role": "user",
-                "content": altered_prompt
-            }])
-        altered_content = response.choices[0].message.content.strip()
-        altered_prompts.append({"prompt_id": prompt[2], "prompt_text": altered_content})
-
-        # Update the prompt in the database
+    db_connection = DatabaseConnection(DB_SECRET_NAME)
+    connection = db_connection.connection
+    if connection:
+        cursor = connection.cursor()
         cursor.execute('''
-            UPDATE concept_prompts
-            SET prompt_text = ?
-            WHERE id = ?
-        ''', (altered_content, prompt[0]))
+            SELECT * FROM concept_prompts
+            WHERE concept_name = ?
+        ''', (concept_name,))
+        prompts = cursor.fetchall()
+        if not prompts:
+            cursor.close()
+            db_connection.close_connection()
+            raise HTTPException(status_code=404, detail=f"No prompts found for concept_name: {concept_name}")
 
-    conn.commit()
-    conn.close()
+        altered_prompts = []
+        for prompt in prompts:
+            # Assuming the prompt_text is at the fifth position in the tuple
+            mj_prompt = prompt[4]
+            altered_prompt = f"""
+            Use the instructions provided below in delimiter [], to edit the image prompt in delimiter <>
 
-    return altered_prompts
+            instructions:
+            [{instructions}]
+
+            image prompt:
+            <{mj_prompt}>
+            """
+
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{
+                    "role": "system",
+                    "content": "You are an AI assistant capable of editing / modifying an image description according to given instructions"
+                }, {
+                    "role": "user",
+                    "content": altered_prompt
+                }])
+            altered_content = response.choices[0].message.content.strip()
+            altered_prompts.append({"prompt_id": prompt[2], "prompt_text": altered_content})
+
+            # Update the prompt in the database
+            cursor.execute('''
+                UPDATE concept_prompts
+                SET prompt_text = ?
+                WHERE id = ?
+            ''', (altered_content, prompt[0]))
+
+        cursor.close()
+        db_connection.close_connection()
+        return altered_prompts
 
 @router.post("/alter_prompts",response_model=list[dict])
 async def concept(concept_name: str, instructions: str):
@@ -346,28 +347,25 @@ async def zoomout(body: TriggerZoomOutIn):
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
 @router.post("/view_concepts",response_model=list[dict])
-async def view_concepts(concept_name: str):
-    
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
+# Function to view concepts from the PostgreSQL database
+def view_concepts(concept_name):
+    db_connection = DatabaseConnection(DB_SECRET_NAME)
+    connection = db_connection.connection
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute('''
+            SELECT * FROM concept_prompts
+            WHERE concept_name = %s
+        ''', (concept_name,))
+        prompts = cursor.fetchall()
+        cursor.close()
+        db_connection.close_connection()
+        if not prompts:
+            raise HTTPException(status_code=404, detail="No prompts found for concept_name")
+        
+        return [{"prompt_id": prompt[2], "prompt_text": prompt[4]} for prompt in prompts]
 
-    # Retrieve prompts for the given concept_name
-    cursor.execute('''
-        SELECT * FROM concept_prompts
-        WHERE concept_name = ?
-    ''', (concept_name,))
 
-    prompts = cursor.fetchall()
-
-    conn.close()
-
-    # Check if prompts were found
-    if not prompts:
-        raise HTTPException(status_code=404, detail="No prompts found for the given concept_name")
-
-    prompts_list = [{"prompt_id": prompt[2], "prompt_text": prompt[4]} for prompt in prompts]
-
-    return prompts_list
 
 
 
@@ -375,29 +373,54 @@ async def view_concepts(concept_name: str):
 
 @router.post("/get_message")
 async def get_message(body: MessageBody):
-    data = await Retrieve_Messages(body.trigger_id)
-    if "error" in data :
-        raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail=data["error"],
-    )
-    InsertIntoPrompts(data)
-    return data
+    try:
+        # Create a database connection
+        db_connection = DatabaseConnection(secret_name="prod/AthenaAI/postgres")
+        connection = db_connection.connection
+
+        # Retrieve messages
+        data = await Retrieve_Messages(body.trigger_id)
+        
+        if "error" in data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=data["error"],
+            )
+
+        # Insert data into the database
+        InsertIntoPrompts(data, connection)
+
+        return data
+
+    finally:
+        # Ensure that the database connection is closed, even in case of an exception
+        db_connection.close_connection()
+
+
+
 
 
 @router.post("/view_messages")
-async def view_messages(body: TableBody):
-    data = GetRecords(body.data_type, body.msg_id)
-    if "error" in data :
-        raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail=data["error"],
-    )
+async def view_messages(msg_id: int = None, trigger_id: str = None):
+    try:
+        # Create a database connection
+        db_connection = DatabaseConnection(secret_name="prod/AthenaAI/postgres")
+        connection = db_connection.connection
 
-    return data
+        # Get records from the "messages" table with optional msg_id and trigger_id
+        data = GetRecords("messages", msg_id=msg_id, trigger_id=trigger_id, connection=connection)
 
+        if "error" in data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=data["error"],
+            )
 
+        return data
 
+    finally:
+        # Ensure that the database connection is closed, even in case of an exception
+        db_connection.close_connection()
 
 @router.post("/upload_concept_template")
 async def upload_concept_template(template: UploadFile,
