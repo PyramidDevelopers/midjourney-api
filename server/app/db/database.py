@@ -17,10 +17,10 @@ class DatabaseConnection:
     def get_postgres_connection(self):
         try:
                 connection = psycopg2.connect(
-                    host=os.getenv('DEV_DB_HOST', 'localhost'),
+                    host=os.getenv('DEV_DB_HOST', 'postgres'),
                     database=os.getenv('DEV_DB_NAME', 'postgres'),
                     user=os.getenv('DEV_DB_USER', 'postgres'),
-                    password=os.getenv('DEV_DB_PASSWORD', 'password'),
+                    password=os.getenv('DEV_DB_PASSWORD', 'postgres'),
                     sslmode='disable'  # Local DB might not use SSL
                 )
                 return connection

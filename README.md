@@ -47,13 +47,11 @@ CHANNEL_ID=Channel ID
 CALLBACK_URL=Callback URL, default http post request, used to receive midjourney drawing progress and results
 ```
 
-
-Can also use `make setup` to setup the basics
-
 ### Start directly
 
 ```bash
-# Build and Run the 
+make run-all
+# Check out makefile for more instructions
 
 ```
 
@@ -62,36 +60,6 @@ Can also use `make setup` to setup the basics
 ```bash
 git pull
 
-# Start listening to the bot
-python task_bot.py
-# Start the HTTP service
-python server.py
-
-```
-
-### Docker Start
-
-Fill in the environment variables in [start.sh](./start.sh) after `-e` and start directly:
-
-```bash
-sh start.sh
-```
-
-Or build the image locally:
-
-```bash
-# Build the image
-sh build.sh
-# Start the container
-sh start.sh
-
-```
-
-#### Update
-
-```bash
-docker rmi kunyu/midjourney-api:1.0
-sh start.sh
 ```
 
 Interface `swagger`documentation：[http://127.0.0.1:8062/docs](http://127.0.0.1:8062/docs)

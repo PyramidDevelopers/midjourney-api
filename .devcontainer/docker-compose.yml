@@ -9,7 +9,6 @@ services:
       dockerfile: Dockerfile
     hostname: athena
     container_name: athena-mj-server
-    command: sleep infinity
     volumes:
       - ../server:/app
     ports:
@@ -25,8 +24,8 @@ services:
     image: postgres:alpine
     hostname: athena
     container_name: athena-postgres
-    # ports:
-    #   - 5432:5432
+    ports:
+       - 5432:5432
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
