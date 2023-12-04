@@ -1,6 +1,6 @@
 // spell: disable
 {
-	"name": "Athena",
+	"name": "Python 3 & PostgeSQL",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "server",
 	"workspaceFolder": "/app",
@@ -11,7 +11,6 @@
 		"ms-python.pylint",
 		"ms-python.vscode-pylance",
 		"alexkrechik.cucumberautocomplete",
-		"cstrap.flask-snippets",
 		"yzhang.markdown-all-in-one",
 		"bierner.github-markdown-preview",
 		"hnw.vscode-auto-open-markdown-preview",
@@ -28,7 +27,6 @@
 		"GitHub.copilot-nightly"
 	],
 	//"forwardPorts": [8000],
-	"postCreateCommand": "sudo pip install -r requirements.txt",
 	"features": {
 		"docker-in-docker": "latest"}
 }

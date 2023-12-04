@@ -29,15 +29,15 @@ sequenceDiagram
 2. Have Midjourney and Discord accounts.
 3. Create a Discord channel and add a bot, refer to the tutorial [Midjourney｜ How to integrate into your platform](https://mp.weixin.qq.com/s?__biz=Mzg4MjkzMzc1Mg==&mid=2247484029&idx=1&sn=d3c458bba9459f19f05d13ab23f5f67e&chksm=cf4e68eaf839e1fc2db025bd9940d0f5e57862f1788c88215b4a66cb23f553a30c5f37ac3ae8&token=79614426&lang=zh_CN#rd)
 
-## Installation and Start
+## Installation (One Time Only)
 
 ```bash
-git clone
-pip install -r requirements.txt
-python3 get_aws_secrets.py
+make setup
 ```
 
-This will Rename the file `.env.template` to `.env` and fill in the parameter values:
+This will create a venv, install required packages, generate the .env file and then delete venv. This only needs to be run once
+
+env.template :
 
 ```
 USER_TOKEN=User token
@@ -47,18 +47,11 @@ CHANNEL_ID=Channel ID
 CALLBACK_URL=Callback URL, default http post request, used to receive midjourney drawing progress and results
 ```
 
-### Start directly
+### Start
 
 ```bash
 make run-all
 # Check out makefile for more instructions
-
-```
-
-#### Update
-
-```bash
-git pull
 
 ```
 

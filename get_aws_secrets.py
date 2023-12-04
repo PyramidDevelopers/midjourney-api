@@ -9,9 +9,6 @@ def update_env_with_secrets():
     SECRET_NAME = "prod/AthenaAI/secrets"
     REGION_NAME = "us-east-1"
 
-    print("THIS SCRIPT WILL OVERWRITE THE .env FILE WITH SECRETS FROM AWS SECRETS MANAGER")
-    input("Press Enter to continue... (or Ctrl+C to cancel)")
-
     load_dotenv()
 
     aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
