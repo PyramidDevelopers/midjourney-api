@@ -4,8 +4,8 @@ from typing import Dict, Any, Union
 
 import aiohttp
 
-from lib.api import CHANNEL_ID, USER_TOKEN, GUILD_ID
-from util.fetch import fetch, fetch_json, FetchMethod
+from app.lib.api import CHANNEL_ID, USER_TOKEN, GUILD_ID
+from app.util.fetch import fetch, fetch_json, FetchMethod
 
 TRIGGER_URL = "https://discord.com/api/v9/interactions"
 UPLOAD_ATTACHMENT_URL = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/attachments"

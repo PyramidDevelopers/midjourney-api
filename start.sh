@@ -10,7 +10,7 @@ docker run -d --net mjapi --name mj-server -p 8062:8062 \
 	-e CHANNEL_ID="" \
 	-e CONCUR_SIZE=3 \
 	-e WAIT_SIZE=10 \
-	kunyu/midjourney-api:1.0
+	athena/backend-dev:1.0
 
 docker run -d --net mjapi --name mj-bot \
 	-e TZ=Asia/Shanghai \
@@ -21,4 +21,4 @@ docker run -d --net mjapi --name mj-bot \
 	-e CHANNEL_ID="" \
 	-e CALLBACK_URL="" \
 	-e QUEUE_RELEASE_API="http://mj-server:8062/v1/api/trigger/queue/release" \
-	kunyu/midjourney-api:1.0 bot
+	athena/backend-dev:1.0 bot

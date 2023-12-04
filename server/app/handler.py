@@ -6,8 +6,8 @@ from typing import Union
 from fastapi import status
 from fastapi.responses import JSONResponse
 
-from exceptions import BannedPromptError
-from lib.prompt import BANNED_PROMPT
+from app.exceptions import BannedPromptError
+from app.lib.prompt import BANNED_PROMPT
 
 PROMPT_PREFIX = "<#"
 PROMPT_SUFFIX = "#>"

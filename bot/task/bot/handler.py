@@ -4,9 +4,11 @@ from typing import Dict, Union, Any
 
 from discord import Message
 
-from app.handler import PROMPT_PREFIX, PROMPT_SUFFIX
-from lib.api.callback import queue_release, callback
+from util.callback import queue_release, callback
 from task.bot._typing import CallbackData, Attachment, Embed
+
+PROMPT_PREFIX = "<#"
+PROMPT_SUFFIX = "#>"
 
 TRIGGER_ID_PATTERN = f"{PROMPT_PREFIX}(\w+?){PROMPT_SUFFIX}"  # 消息 ID 正则
 

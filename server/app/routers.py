@@ -9,9 +9,9 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 
 
 
-from lib.api import discord
-from lib.api.discord import TriggerType
-from util._queue import taskqueue
+from app.lib.api import discord
+from app.lib.api.discord import TriggerType
+from app.util._queue import taskqueue
 from .handler import prompt_handler, concept_handler, generate_single_prompt, unique_id, generate_prompt_error_message
 from .get_role_response import get_help_text
 from .schema import (
@@ -39,8 +39,8 @@ from .schema import (
 
 from .get_messages import Retrieve_Messages
 
-from db.database_functions import InsertIntoPrompts,GetRecords, UploadBanner
-from db.database import DatabaseConnection
+from app.db.database_functions import InsertIntoPrompts,GetRecords, UploadBanner
+from app.db.database import DatabaseConnection
 
 router = APIRouter()
 

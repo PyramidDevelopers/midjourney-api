@@ -1,4 +1,4 @@
-from db.database import DatabaseConnection
+from app.db.database import DatabaseConnection
 from fastapi import UploadFile
 
 def InsertIntoPrompts(info, connection):

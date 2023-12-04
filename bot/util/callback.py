@@ -3,8 +3,10 @@ from os import getenv
 import aiohttp
 from loguru import logger
 
-from lib.api import CALLBACK_URL
 from util.fetch import fetch
+
+
+CALLBACK_URL = getenv("CALLBACK_URL")
 
 
 async def callback(data):

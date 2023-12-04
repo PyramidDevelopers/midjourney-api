@@ -3,7 +3,7 @@ from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from exceptions import APPBaseException, ErrorCode
+from app.exceptions import APPBaseException, ErrorCode
 
 
 def init_app():
@@ -44,4 +44,8 @@ def register_blueprints(_app):
 
 def run(host, port):
     _app = init_app()
+    print(f"Running on http://{host}:{port}")
     uvicorn.run(_app, port=port, host=host)
+
+if __name__ == '__main__':
+    run("0.0.0.0", 8062)

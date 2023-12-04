@@ -2,15 +2,33 @@ import json
 import boto3
 from botocore.exceptions import ClientError
 import psycopg2
+import os
 from fastapi import UploadFile
 
 class DatabaseConnection:
     def __init__(self, secret_name, region_name="us-east-1"):
         self.secret_name = secret_name
         self.region_name = region_name
-        self.connection = self.get_postgres_connection()
+        if os.getenv("PRODUCTION"):
+            self.connection = self.get_postgres_connection_prod()
+        else:
+            self.connection = self.get_postgres_connection()
 
     def get_postgres_connection(self):
+        try:
+                connection = psycopg2.connect(
+                    host=os.getenv('DEV_DB_HOST', 'localhost'),
+                    database=os.getenv('DEV_DB_NAME', 'postgres'),
+                    user=os.getenv('DEV_DB_USER', 'postgres'),
+                    password=os.getenv('DEV_DB_PASSWORD', 'password'),
+                    sslmode='disable'  # Local DB might not use SSL
+                )
+                return connection
+        except (Exception, psycopg2.Error) as error:
+                print("Error connecting to PostgreSQL database:", error)
+                return None
+
+    def get_postgres_connection_prod(self):
         # Create a Secrets Manager client
         session = boto3.session.Session()
         client = session.client(

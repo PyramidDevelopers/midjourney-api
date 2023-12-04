@@ -1,0 +1,53 @@
+---
+# Python 3 with PostgreSQL
+version: "3"
+
+services:
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    hostname: athena
+    container_name: athena-mj-server
+    command: sleep infinity
+    volumes:
+      - ../server:/app
+    ports:
+      - 8062:8062
+    env_file:
+      - ../.env
+    networks:
+      - dev
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:alpine
+    hostname: athena
+    container_name: athena-postgres
+    # ports:
+    #   - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - dev
+  
+  bot:
+    build:
+      context: ../bot
+      dockerfile: Dockerfile
+    hostname: athena-bot
+    container_name: athena-mj-bot
+    volumes:
+      - ../bot:/app
+    env_file:
+      - ../.env
+    networks:
+      - dev
+
+volumes:
+  postgres:
+networks:
+  dev:

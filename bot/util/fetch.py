@@ -4,7 +4,7 @@ from typing import Callable, Coroutine, Any, TypeVar, Union, Dict
 from aiohttp import ClientError, ClientSession, hdrs
 from loguru import logger
 
-from exceptions import MaxRetryError
+from util.exceptions import MaxRetryError
 
 T = TypeVar("T")
 
