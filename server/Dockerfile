@@ -39,4 +39,4 @@ ENV PORT 8062
 EXPOSE $PORT
 
 # Run the bot when the container launches
-CMD ["python", "server.py"]
+# CMD ["python", "server.py"]

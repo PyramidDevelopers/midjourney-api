@@ -55,6 +55,18 @@ make run-all
 
 ```
 
+## While working (IMPORTANT)
+
+Uncomment line 12 and comment line 13 in /.devcontainer/docker-compose.yml
+
+Use VSCode - Reopen in devcontainer and then make changes.
+
+Otherwise, images need to constantly be rebuilt.
+While pushing, make sure that the change is reverted.
+
+
+
+
 Interface `swagger`documentation：[http://127.0.0.1:8062/docs](http://127.0.0.1:8062/docs)
 
 `midjourney-api`  provides interfaces:

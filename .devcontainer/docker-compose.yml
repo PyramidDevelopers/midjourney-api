@@ -9,6 +9,8 @@ services:
       dockerfile: Dockerfile
     hostname: athena
     container_name: athena-mj-server
+    # command : sleep infinity # for debugging. Need to run python server.py in the container
+    command: python server.py # for production
     volumes:
       - ../server:/app
     ports:

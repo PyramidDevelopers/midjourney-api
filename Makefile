@@ -8,14 +8,18 @@ setup: ## Create a Python virtual environment
 	python3 -m venv venv > /dev/null && . venv/bin/activate && pip3 install -r requirements.txt > /dev/null && python3 get_aws_secrets.py && rm -rf venv
 	
 ##@ Docker
-run-all:
+delete-all:
+	$(info Deleting all containers...)
+	docker rm -f /athena-postgres && docker rm -f /athena-mj-bot && docker rm -f /athena-mj-server || true
+
+run-all: delete-all
 	$(info Running all images (If there are changes, run build-run-all or build specific)...)
-	@docker-compose -f .devcontainer/docker-compose.yml up || (echo "IF ERROR IS NO ENV FILE : RUN `MAKE SETUP` FIRST")
+	@docker-compose -f .devcontainer/docker-compose.yml up || (echo "IF ERROR IS NO ENV FILE : RUN MAKE SETUP FIRST")
 	docker-compose -f .devcontainer/docker-compose.yml logs -f
 
 build-run-all:
 	$(info Building all images...)
-	@docker-compose -f .devcontainer/docker-compose.yml up  --build || (echo "IF ERROR IS NO ENV FILE : RUN `MAKE SETUP` FIRST")
+	@docker-compose -f .devcontainer/docker-compose.yml up  --build || (echo "IF ERROR IS NO ENV FILE : RUN MAKE SETUP FIRST")
 	docker-compose -f .devcontainer/docker-compose.yml logs -f
 
 stop-all:
