@@ -50,7 +50,7 @@ CALLBACK_URL=Callback URL, default http post request, used to receive midjourney
 ### Start
 
 ```bash
-make run-all
+make build-run-all
 # Check out makefile for more instructions
 
 ```
